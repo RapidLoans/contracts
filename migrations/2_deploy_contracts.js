@@ -1,8 +1,5 @@
-var ConvertLib = artifacts.require("./ConvertLib.sol");
-var MetaCoin = artifacts.require("./MetaCoin.sol");
-
-module.exports = function(deployer) {
-  deployer.deploy(ConvertLib);
-  deployer.link(ConvertLib, MetaCoin);
-  deployer.deploy(MetaCoin, 10000);
+var LendingPool = artifacts.require("./LiquidityPool.sol");
+module.exports = function (deployer) {
+  // deployer.deploy(LendingPool, "Hi QuickNode!");
+  deployer.deploy(LendingPool);
 };

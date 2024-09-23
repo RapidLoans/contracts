@@ -31,7 +31,7 @@ Then, run the migration with:
       privateKey: process.env.PRIVATE_KEY_NILE,
       userFeePercentage: 100,
       feeLimit: 1000 * 1e6,
-      fullHost: 'https://api.nileex.io',
+      fullHost: 'https://nile.trongrid.io',
       network_id: '3'
     },
     development: {
@@ -44,8 +44,16 @@ Then, run the migration with:
     },
     compilers: {
       solc: {
-        version: '0.5.4'
+        version: '0.8.6'
       }
     }
+  },
+  // solc compiler optimize
+  solc: {
+  //   optimizer: {
+  //     enabled: true,
+  //     runs: 200
+  //   },
+  //   evmVersion: 'istanbul'
   }
 }
