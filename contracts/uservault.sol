@@ -10,10 +10,10 @@ pragma solidity ^0.8.0;
 
 contract UserVault {
     address public admin;
-r
+
     struct Vault {
-        uint256 trxBalance;  // Balance of TRX in the vault
-        uint256 jstBalance;  // Balance of JST (an ERC20 token) in the vault
+        uint256 trxBalance; // Balance of TRX in the vault
+        uint256 jstBalance; // Balance of JST (an ERC20 token) in the vault
     }
 
     mapping(address => Vault) private userVaults;
@@ -51,7 +51,14 @@ r
     function depositJST(uint256 amount) external {
         require(amount > 0, "Deposit amount must be greater than zero");
 
-        require(IERC20(jstTokenAddress).transferFrom(msg.sender, address(this), amount), "Transfer of JST failed");
+        // require(
+        //     IERC20(jstTokenAddress).transferFrom(
+        //         msg.sender,
+        //         address(this),
+        //         amount
+        //     ),
+        //     "Transfer of JST failed"
+        // );
 
         userVaults[msg.sender].jstBalance += amount;
 
@@ -65,7 +72,10 @@ r
      */
     function withdrawTRX(uint256 amount) external {
         require(amount > 0, "Withdraw amount must be greater than zero");
-        require(userVaults[msg.sender].trxBalance >= amount, "Insufficient TRX balance");
+        require(
+            userVaults[msg.sender].trxBalance >= amount,
+            "Insufficient TRX balance"
+        );
 
         userVaults[msg.sender].trxBalance -= amount;
 
@@ -81,11 +91,17 @@ r
      */
     function withdrawJST(uint256 amount) external {
         require(amount > 0, "Withdraw amount must be greater than zero");
-        require(userVaults[msg.sender].jstBalance >= amount, "Insufficient JST balance");
+        require(
+            userVaults[msg.sender].jstBalance >= amount,
+            "Insufficient JST balance"
+        );
 
         userVaults[msg.sender].jstBalance -= amount;
 
-        require(IERC20(jstTokenAddress).transfer(msg.sender, amount), "Transfer of JST failed");
+        // require(
+        //     IERC20(jstTokenAddress).transfer(msg.sender, amount),
+        //     "Transfer of JST failed"
+        // );
 
         emit Withdrawn(msg.sender, "JST", amount);
     }
@@ -119,6 +135,14 @@ r
 }
 
 interface IERC20 {
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transfer(
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 }

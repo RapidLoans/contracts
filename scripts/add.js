@@ -10,46 +10,33 @@ import {
   Plugin,
 } from "tronweb";
 import abi from "./abi.json" assert { type: "json" };
+import jstabi from "./jstabi.json" assert { type: "json" };
 
-// const tronWeb = new TronWeb({
-//   fullHost: "https://nile.trongrid.io",
-//   privateKey: process.env.PRIVATE_KEY_NILE,
-// });
 async function sendMessage() {
+  //initialise tronweb
   const tronWeb = new TronWeb({
     fullHost: "https://nile.trongrid.io",
     privateKey: process.env.PRIVATE_KEY_NILE,
   });
-  const contractAddress = TronWeb.address.fromHex(
-    "410e2fd45f247847522b57c3544d597ed14c956f4c"
+  //set liquidity pool address
+  const lpAddress = TronWeb.address.fromHex(
+    "4139b0b7753db0ccc9fe8ec9da85d2c7b1d618d6fb"
   );
-
-  const contract = await tronWeb.contract(abi.abi, contractAddress);
-  console.log(contract);
-  //   console.log(abi);
-
+  //initialise liquidity pool contract
+  const contract = await tronWeb.contract(abi.abi, lpAddress);
+  //call functions on liquidity pool
   let txID = await contract.addTRX().send({ callValue: 100000 });
-  // now you can visit web page https://nile.tronscan.org/#/transaction/${txID} to view the transaction detail.
-  // or using code below:
+  //console
   let result = await tronWeb.trx.getTransaction(txID);
+  console.log("txid", txID);
   console.log("result", result);
 
-  // Commented code for sending messages
-  // let lastMessage = await contract.getLastMessage().call();
-  // console.log(`The current message is: ${lastMessage}`);
-  // let input = prompt("Do you want to send a new message? ([1]: Yes, [2]: No) ");
-  // if (input == 1) {
-  //   let newMessage = prompt("Type your new message: ");
-  //   let txId = await contract.setMessage(newMessage).send();
-  //   console.log(
-  //     `Check tx on the explorer: https://nile.tronscan.org/#/transaction/${txId}`
+  //   let jst = await tronWeb.contract(
+  //     jstabi.jstabi,
+  //     "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
   //   );
-  //   lastMessage = await contract.getLastMessage().call();
-  //   console.log(`The current message is: ${lastMessage}`);
+  //   let txid2 = await jst.approve(100000).send();
+  //   console.log("txid2", txid2);
   // }
-
-  //   let txId = await contract.addTRX().send({ callValue: 100000 });
-  //   console.log(`Transaction ID: ${txId}`);
 }
-
 sendMessage();
