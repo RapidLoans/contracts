@@ -88,13 +88,40 @@ contract LiquidityPool {
 
     function borrowJST(uint256 amount) external {}
 
-    function flashLoanTRX(uint256 amount) external payable {}
+    function flashLoanTRX(
+        address payable flashLoanCore,
+        uint256 amount
+    ) external returns (bool) /**Only FlashLoanCore */ {
+        require(address(this).balance > 0, "Not enough TRX in pool");
+        require(amount > 0, "Invalid amount");
+        bool success = flashLoanCore.send(amount);
+        require(success, "Transfer failed");
+        return success;
+    }
 
-    function flashLoanJST(uint256 amount) external payable {}
+    function flashLoanJST(uint256 amount) external {}
 
     function getInvestorStruct(
         address _add
     ) public view returns (investor memory) {
         return investors[investorIndexes[_add]];
     }
+
+    function getContractTRXBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function getContractJSTBalance() public view returns (uint256) {
+        return jst.balanceOf(address(this));
+    }
+
+    function getUserTRXBalance(address _user) public view returns (uint256) {
+        return investors[investorIndexes[_user]].balanceTRX;
+    }
+
+    function getUserJSTBalance(address _user) public view returns (uint256) {
+        return investors[investorIndexes[_user]].balanceJST;
+    }
+
+    receive() external payable {}
 }
