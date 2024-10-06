@@ -2,11 +2,10 @@
 pragma solidity ^0.8.0;
 
 /**
- * @title Oracle
- * @author RapidLoans
- * @notice A decentralized price oracle for RapidLoans.
+ * @title Oracle.
+ * @author RapidLoans.
+ * @notice A decentralized price oracle for RapidLoans for TRX/JST to USD.
  * @dev The contract provides asset prices in USD (with 18 decimal places).
- *      Admins can update prices, and users can fetch the latest prices.
  */
 contract Oracle {
     address public admin;
