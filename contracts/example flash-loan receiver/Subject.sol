@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
+pragma solidity ^0.8.6;
 import "../interfaces/IReceiverContract.sol";
 import "../RapidLoansCore.sol";
 
@@ -23,12 +23,10 @@ contract Subject is IReceiverContract {
         return amountReceived;
     }
 
-    function requestFlashLoanJST(
-        uint256 _amount
-    ) public payable returns (uint256) {
+    function requestFlashLoanJST(uint256 _amount) public returns (uint256) {
         uint256 amountReceived = flashLoanCore.requestFlashLoanJST(
             _amount,
-            payable(address(this))
+            address(this)
         );
 
         return amountReceived;
@@ -46,12 +44,20 @@ contract Subject is IReceiverContract {
         uint256 _repayAmount
     ) external override returns (bool) {
         jst.approve(address(flashLoanCore), _repayAmount);
-        bool success = jst.transfer(address(flashLoanCore), _repayAmount);
+        bool success = jst.transferFrom(
+            address(this),
+            address(flashLoanCore),
+            _repayAmount
+        );
         require(success, "Failed to repay loan");
     }
 
-    function getContractBalance() public returns (uint256) {
+    function getContractBalance() public view returns (uint256) {
         return address(this).balance;
+    }
+
+    function getContractJSTBalance() public view returns (uint256) {
+        return jst.balanceOf(address(this));
     }
 
     receive() external payable {}

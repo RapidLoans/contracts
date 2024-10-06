@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
+pragma solidity ^0.8.6;
 
 import "./LiquidityPool.sol";
 import "./interfaces/IReceiverContract.sol";
@@ -37,23 +37,25 @@ contract RapidLoansCore {
 
     function requestFlashLoanJST(
         uint256 _amount,
-        address payable subject
+        address subject
     ) public returns (uint256) {
         uint256 amountJSTWithdrawn = liquidityPool.WithdrawFlashLoanJST(
-            address(this),
+            subject,
             _amount
         );
         require(amountJSTWithdrawn > 0, "Transfer to subject failed");
         uint256 initialAmount = jst.balanceOf(address(this));
-        IReceiverContract(subject).executeJSTRapidLoan(
-            jst.balanceOf(address(this))
-        );
+        IReceiverContract(subject).executeJSTRapidLoan(_amount + FEE);
         uint256 finalAmount = jst.balanceOf(address(this));
         require(
             finalAmount > initialAmount,
             "RapidLoansCore loan not returned you cheap"
         );
-        bool success = jst.transfer(address(liquidityPool), _amount + FEE);
+        bool success = jst.transferFrom(
+            address(this),
+            address(liquidityPool),
+            _amount + FEE
+        );
         require(success, "Transfer to liquidityPool failed");
         return amountJSTWithdrawn;
     }

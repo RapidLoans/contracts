@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
+pragma solidity ^0.8.6;
 import "./interfaces/ITRC20.sol";
 
 /**
@@ -123,7 +123,7 @@ contract LiquidityPool {
         require(jst.balanceOf(address(this)) > 0, "Not enough JST in pool");
         require(amount > 0, "Invalid amount");
         jst.approve(subject, amount);
-        bool success = jst.transfer(subject, amount);
+        bool success = jst.transferFrom(address(this), subject, amount);
         require(success, "Transfer to Subject failed");
         // profitFromFlashLoansJST += finalJST - initialJST;
         emit FlashLoanJSTWithdrawn(amount);
