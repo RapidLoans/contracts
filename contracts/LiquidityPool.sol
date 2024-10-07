@@ -35,6 +35,7 @@ contract LiquidityPool {
     event BorrowedTRX(address borrower, uint256 amountTRX);
     event BorrowedJST(address borrower, uint256 amountJST);
     event RepiadTRX(address borrower, uint256 amountRepaidWithIntrest);
+    event RepaidJST(address borrower, uint256 amountRepaidWithIntrest);
 
     address public RAPID_LOANS_CORE;
     address public JST_CONTRACT_ADDRESS_NILE =
@@ -94,13 +95,7 @@ contract LiquidityPool {
      */
     function addTRX() external payable returns (uint256 balanceTRX) {
         require(msg.value > 0, "Invalid amount");
-        require(
-            block.timestamp >=
-                investors[investorIndexes[msg.sender]]
-                    .lastInvestedTRXTimestamp +
-                    15 days,
-            "User already invested"
-        );
+
         if (investorIndexes[msg.sender] == 0) {
             investor memory temp = investor({
                 investorId: investorIdCounter,
@@ -118,6 +113,13 @@ contract LiquidityPool {
             emit NewInvestor(msg.sender);
             return investors[investorIndexes[msg.sender]].balanceTRX;
         } else {
+            require(
+                block.timestamp >=
+                    investors[investorIndexes[msg.sender]]
+                        .lastInvestedTRXTimestamp +
+                        15 days,
+                "User already invested"
+            );
             investors[investorIndexes[msg.sender]].balanceTRX += msg.value;
             investors[investorIndexes[msg.sender]]
                 .lastInvestedTRXTimestamp = block.timestamp;
@@ -138,13 +140,7 @@ contract LiquidityPool {
             jst.allowance(msg.sender, address(this)) > 0,
             "Not enough JST approved"
         );
-        require(
-            block.timestamp >=
-                investors[investorIndexes[msg.sender]]
-                    .lastInvestedJSTTimestamp +
-                    15 days,
-            "User already invested"
-        );
+
         bool success = jst.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer of JST failed");
         if (investorIndexes[msg.sender] == 0) {
@@ -163,6 +159,13 @@ contract LiquidityPool {
             investorIdCounter++;
             emit NewInvestor(msg.sender);
         } else {
+            require(
+                block.timestamp >=
+                    investors[investorIndexes[msg.sender]]
+                        .lastInvestedJSTTimestamp +
+                        15 days,
+                "User already invested"
+            );
             investors[investorIndexes[msg.sender]].balanceJST += amount;
             investors[investorIndexes[msg.sender]]
                 .lastInvestedJSTTimestamp = block.timestamp;
@@ -241,6 +244,7 @@ contract LiquidityPool {
         );
         uint256 amountToBeDeducted = priceOracle.getTRXToJST(amount);
         investors[investorIndexes[msg.sender]].balanceJST -= amountToBeDeducted;
+        investors[investorIndexes[msg.sender]].borrowedTRX += amount;
         bool success = payable(msg.sender).send(amount);
         require(success, "Transfer of TRX failed");
         emit BorrowedTRX(msg.sender, amount);
@@ -258,7 +262,9 @@ contract LiquidityPool {
         uint256 finalAmount = ((BORROW_RATE * borrowedAmount) / 100) +
             (borrowedAmount);
         require(msg.value >= finalAmount, "Repay the whole loan.");
-        investors[investorIndexes[msg.sender]].balanceTRX -= msg.value;
+        investors[investorIndexes[msg.sender]].balanceJST += priceOracle
+            .getTRXToJST(borrowedAmount);
+        investors[investorIndexes[msg.sender]].borrowedTRX -= borrowedAmount;
         emit RepiadTRX(msg.sender, msg.value);
     }
 
@@ -277,10 +283,28 @@ contract LiquidityPool {
         );
         uint256 amountToBeDeducted = priceOracle.getJSTToTRX(amount);
         investors[investorIndexes[msg.sender]].balanceTRX -= amountToBeDeducted;
-        investors[investorIndexes[msg.sender]].balanceJST -= amount;
         bool success = jst.transfer(msg.sender, amount);
+        investors[investorIndexes[msg.sender]].borrowedJST += amount;
         require(success, "Transfer of JST failed");
         emit BorrowedJST(msg.sender, amount);
+    }
+
+    /**
+     * @notice Repay JST debt to liquidity pool.
+     * @notice You must have an outstanding debt.
+     * @param amount Amount of JST to repay must be greater than principal + intrest.
+     */
+    function repayJST(uint256 amount) external {
+        require(amount > 0, "Invalid amount");
+        uint256 borrowedAmount = investors[investorIndexes[msg.sender]]
+            .borrowedJST;
+        uint256 finalAmount = ((BORROW_RATE * borrowedAmount) / 100) +
+            (borrowedAmount);
+        require(amount >= finalAmount, "Repay the whole loan.");
+        investors[investorIndexes[msg.sender]].balanceTRX += priceOracle
+            .getJSTToTRX(borrowedAmount);
+        investors[investorIndexes[msg.sender]].borrowedJST -= borrowedAmount;
+        emit RepaidJST(msg.sender, amount);
     }
 
     /**
