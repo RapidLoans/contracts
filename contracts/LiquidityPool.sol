@@ -370,7 +370,7 @@ contract LiquidityPool {
      * @param investorAddress Address of the investor.
      * @return timestamp The timestamp of the last time the investor invested JST.
      */
-    function getUseLastInvestedJSTTimestamp(
+    function getUserLastInvestedJSTTimestamp(
         address investorAddress
     ) public view returns (uint256 timestamp) {
         return
