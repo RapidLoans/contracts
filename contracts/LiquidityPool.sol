@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.6;
+pragma solidity 0.8.20;
+
 import "./interfaces/ITRC20.sol";
 
 /**
@@ -10,7 +11,7 @@ import "./interfaces/ITRC20.sol";
  */
 
 contract LiquidityPool {
-    struct investor {
+    struct Investor {
         uint256 investorId;
         address investor;
         uint256 balanceTRX;
@@ -22,22 +23,25 @@ contract LiquidityPool {
     event TRXAdded(address investor, uint256 amountTRX);
     event FlashLoanTRXWithdrawn(uint256 amountTRX);
     event FlashLoanJSTWithdrawn(uint256 amountJST);
+    event TRXWithdrawn(address investor, uint256 amountTRX);
+    event JSTWithdrawn(address investor, uint256 amountJST);
+    event BorrowedTRX(address borrower, uint256 amountTRX);
+    event BorrowedJST(address borrower, uint256 amountJST);
 
     ITRC20 public jst =
         ITRC20(address(0x37349aEB75a32f8c4c090DAFF376cF975F5d2eBA));
 
     address public RAPID_LOANS_CORE;
-    uint256 public BORROW_RATE = 6;
+    uint256 public BORROW_RATE = 6; // The rate of interest on borrowed funds
     uint256 public profitFromFlashLoansTRX;
     uint256 public profitFromFlashLoansJST;
-    investor[] internal investors;
+    Investor[] internal investors;
     uint256 internal investorIdCounter;
-
     mapping(address => uint256) internal investorIndexes;
 
     constructor() {
         investorIdCounter = 1;
-        investor memory initialInvestor = investor({
+        Investor memory initialInvestor = Investor({
             investorId: 0,
             investor: address(0),
             balanceTRX: 0,
@@ -53,7 +57,7 @@ contract LiquidityPool {
     function addTRX() external payable returns (uint256 balanceTRX) {
         require(msg.value > 0, "Invalid amount");
         if (investorIndexes[msg.sender] == 0) {
-            investor memory temp = investor({
+            Investor memory temp = Investor({
                 investorId: investorIdCounter,
                 investor: msg.sender,
                 balanceTRX: msg.value,
@@ -78,7 +82,7 @@ contract LiquidityPool {
         bool success = jst.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer of JST failed");
         if (investorIndexes[msg.sender] == 0) {
-            investor memory temp = investor({
+            Investor memory temp = Investor({
                 investorId: investorIdCounter,
                 investor: msg.sender,
                 balanceTRX: 0,
@@ -95,13 +99,62 @@ contract LiquidityPool {
         return investors[investorIndexes[msg.sender]].balanceJST;
     }
 
-    function withdrawTRX(uint256 amount) external {}
+    function withdrawTRX(
+        uint256 amount
+    ) external returns (uint256 amountWithdrawnTRX) {
+        require(amount > 0, "Invalid amount");
+        require(
+            investors[investorIndexes[msg.sender]].balanceTRX >= amount,
+            "Insufficient TRX balance"
+        );
 
-    function withdrawJST(uint256 amount) external {}
+        investors[investorIndexes[msg.sender]].balanceTRX -= amount;
+        payable(msg.sender).transfer(amount);
+        emit TRXWithdrawn(msg.sender, amount);
+        return amount;
+    }
 
-    function borrowTRX(uint256 amount) external {}
+    function withdrawJST(
+        uint256 amount
+    ) external returns (uint256 amountWithdrawnJST) {
+        require(amount > 0, "Invalid amount");
+        require(
+            investors[investorIndexes[msg.sender]].balanceJST >= amount,
+            "Insufficient JST balance"
+        );
+        investors[investorIndexes[msg.sender]].balanceJST -= amount;
+        bool success = jst.transferFrom(address(this), msg.sender, amount);
+        require(success, "Transfer of JST failed");
+        emit JSTWithdrawn(msg.sender, amount);
+        return amount;
+    }
 
-    function borrowJST(uint256 amount) external {}
+    function borrowTRX(uint256 amount) external {
+        require(amount > 0, "Invalid amount");
+        require(
+            investors[investorIndexes[msg.sender]].balanceTRX >= amount,
+            "Insufficient TRX balance"
+        );
+
+        // Logic to charge interest could be added here
+        investors[investorIndexes[msg.sender]].balanceTRX -= amount;
+        payable(msg.sender).transfer(amount);
+        emit BorrowedTRX(msg.sender, amount);
+    }
+
+    function borrowJST(uint256 amount) external {
+        require(amount > 0, "Invalid amount");
+        require(
+            investors[investorIndexes[msg.sender]].balanceJST >= amount,
+            "Insufficient JST balance"
+        );
+
+        // Logic to charge interest could be added here
+        investors[investorIndexes[msg.sender]].balanceJST -= amount;
+        bool success = jst.transfer(msg.sender, amount);
+        require(success, "Transfer of JST failed");
+        emit BorrowedJST(msg.sender, amount);
+    }
 
     function WithdrawFlashLoanTRX(
         address payable subject,
@@ -111,7 +164,6 @@ contract LiquidityPool {
         require(amount > 0, "Invalid amount");
         bool success = payable(subject).send(amount);
         require(success, "Transfer to Subject failed");
-        // profitFromFlashLoansTRX += finalTRX - initialTRX;
         emit FlashLoanTRXWithdrawn(amount);
         return amount;
     }
@@ -123,16 +175,15 @@ contract LiquidityPool {
         require(jst.balanceOf(address(this)) > 0, "Not enough JST in pool");
         require(amount > 0, "Invalid amount");
         jst.approve(subject, amount);
-        bool success = jst.transferFrom(address(this), subject, amount);
+        bool success = jst.transfer(subject, amount);
         require(success, "Transfer to Subject failed");
-        // profitFromFlashLoansJST += finalJST - initialJST;
         emit FlashLoanJSTWithdrawn(amount);
         return amount;
     }
 
     function getInvestorStruct(
         address investorAddress
-    ) public view returns (investor memory investorStruct) {
+    ) public view returns (Investor memory investorStruct) {
         return investors[investorIndexes[investorAddress]];
     }
 

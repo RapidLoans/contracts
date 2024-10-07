@@ -4,14 +4,16 @@ pragma solidity ^0.8.0;
 /**
  * @title Oracle
  * @author RapidLoans
- * @notice A decentralized price oracle for RapidLoans.
- * @dev The contract provides asset prices in USD (with 18 decimal places).
- *      Admins can update prices, and users can fetch the latest prices.
+ * @notice A decentralized price oracle for RapidLoans, fetching price of TRX to JST and JST to TRX.
+ * @dev Admins can update prices, and users can fetch the latest prices.
  */
-contract Oracle {
+contract PriceOracle {
     address public admin;
+
     mapping(address => uint256) public assetPrices;
+
     event PriceUpdated(address indexed asset, uint256 newPrice);
+
     modifier onlyAdmin() {
         require(msg.sender == admin, "Caller is not the admin");
         _;
@@ -29,7 +31,6 @@ contract Oracle {
     function setPrice(address asset, uint256 price) external onlyAdmin {
         require(asset != address(0), "Invalid asset address");
         require(price > 0, "Price must be greater than zero");
-
         assetPrices[asset] = price;
         emit PriceUpdated(asset, price);
     }
