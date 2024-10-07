@@ -116,7 +116,6 @@ contract LiquidityPool {
             investorIndexes[msg.sender] = investorIdCounter;
             investorIdCounter++;
             emit NewInvestor(msg.sender);
-
             return investors[investorIndexes[msg.sender]].balanceTRX;
         } else {
             investors[investorIndexes[msg.sender]].balanceTRX += msg.value;
