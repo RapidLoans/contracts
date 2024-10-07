@@ -64,6 +64,7 @@ contract Subject is IReceiverContract {
         uint256 _repayAmount
     ) external override returns (bool success) {
         //arbitrage logic
+
         success = payable(address(flashLoanCore)).send(_repayAmount);
         return success;
     }
