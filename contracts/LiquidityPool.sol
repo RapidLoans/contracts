@@ -88,11 +88,19 @@ contract LiquidityPool {
 
     /**
      * @notice Function to add TRX to the liquidity pool, as an investment to earn APY.
+     * @notice User can invest only once in 15 days.
      * @dev Creates a new vault if new user or updates the balance, sets block.timestamp to current.
      * @return balanceTRX Amount added.
      */
     function addTRX() external payable returns (uint256 balanceTRX) {
         require(msg.value > 0, "Invalid amount");
+        require(
+            block.timestamp >=
+                investors[investorIndexes[msg.sender]]
+                    .lastInvestedTRXTimestamp +
+                    15 days,
+            "User already invested"
+        );
         if (investorIndexes[msg.sender] == 0) {
             investor memory temp = investor({
                 investorId: investorIdCounter,
@@ -108,16 +116,20 @@ contract LiquidityPool {
             investorIndexes[msg.sender] = investorIdCounter;
             investorIdCounter++;
             emit NewInvestor(msg.sender);
+
+            return investors[investorIndexes[msg.sender]].balanceTRX;
         } else {
             investors[investorIndexes[msg.sender]].balanceTRX += msg.value;
+            investors[investorIndexes[msg.sender]]
+                .lastInvestedTRXTimestamp = block.timestamp;
         }
         emit TRXAdded(msg.sender, msg.value);
-        return investors[investorIndexes[msg.sender]].balanceTRX;
     }
 
     /**
      * @notice Function to add JST to the liquidity pool, as an investment to earn APY.
      * @notice You need to approve JST, this contract as the spender, amount same as param.
+     * @notice User can invest only once in 15 days.
      * @dev Creates a new vault if new user or updates the balance, sets block.timestamp to current.
      * @param amount Amount to invest.
      * @return balanceJST Amount added.
@@ -126,6 +138,13 @@ contract LiquidityPool {
         require(
             jst.allowance(msg.sender, address(this)) > 0,
             "Not enough JST approved"
+        );
+        require(
+            block.timestamp >=
+                investors[investorIndexes[msg.sender]]
+                    .lastInvestedJSTTimestamp +
+                    15 days,
+            "User already invested"
         );
         bool success = jst.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer of JST failed");
@@ -146,6 +165,8 @@ contract LiquidityPool {
             emit NewInvestor(msg.sender);
         } else {
             investors[investorIndexes[msg.sender]].balanceJST += amount;
+            investors[investorIndexes[msg.sender]]
+                .lastInvestedJSTTimestamp = block.timestamp;
         }
         emit JSTAdded(msg.sender, amount);
         return investors[investorIndexes[msg.sender]].balanceJST;
@@ -161,17 +182,15 @@ contract LiquidityPool {
     ) external returns (uint256 amountWithdrawnTRX) {
         require(amount > 0, "Invalid amount");
         require(
-            investors[investorIndexes[msg.sender]].balanceTRX >= amount,
-            "Insufficient TRX balance"
+            investors[investorIndexes[msg.sender]].balanceTRX == amount,
+            "Enter full amount"
         );
         require(
-            amount < investors[investorIndexes[msg.sender]].balanceTRX,
-            "Enter valid amount"
-        );
-        require(
-            investors[investorIndexes[msg.sender]].lastInvestedTRXTimestamp >
-                15 days,
-            "Amount is locked for 15 days"
+            block.timestamp >=
+                investors[investorIndexes[msg.sender]]
+                    .lastInvestedJSTTimestamp +
+                    15 days,
+            "Amount locked for 15 days"
         );
         investors[investorIndexes[msg.sender]].balanceTRX -= amount;
         uint256 finalAmount = ((PROFIT_RATE * amount) / 100) + (amount);
@@ -190,16 +209,14 @@ contract LiquidityPool {
     ) external returns (uint256 amountWithdrawnJST) {
         require(amount > 0, "Invalid amount");
         require(
-            investors[investorIndexes[msg.sender]].balanceJST >= amount,
-            "Insufficient JST balance"
+            investors[investorIndexes[msg.sender]].balanceJST == amount,
+            "Enter full amount"
         );
         require(
-            amount < investors[investorIndexes[msg.sender]].balanceJST,
-            "Enter valid amount"
-        );
-        require(
-            investors[investorIndexes[msg.sender]].lastInvestedJSTTimestamp >
-                15 days,
+            block.timestamp >=
+                investors[investorIndexes[msg.sender]]
+                    .lastInvestedJSTTimestamp +
+                    15 days,
             "Amount is locked for 15 days"
         );
         investors[investorIndexes[msg.sender]].balanceJST -= amount;
@@ -376,6 +393,60 @@ contract LiquidityPool {
         return
             investors[investorIndexes[investorAddress]]
                 .lastInvestedJSTTimestamp;
+    }
+
+    /**
+     * @param investorAddress Address of the investor.
+     * @return Timestamp of time left in which user can withdraw its investment including profit earned.
+     */
+    function getUserTRXInvestmentWithdrawTime(
+        address investorAddress
+    ) public view returns (uint256) {
+        if (investorIndexes[investorAddress] == 0) {
+            return 0;
+        } else {
+            if (
+                investors[investorIndexes[investorAddress]]
+                    .lastInvestedTRXTimestamp +
+                    15 days >
+                block.timestamp
+            ) {
+                return 0;
+            } else {
+                return
+                    investors[investorIndexes[investorAddress]]
+                        .lastInvestedTRXTimestamp +
+                    15 days -
+                    block.timestamp;
+            }
+        }
+    }
+
+    /**
+     * @param investorAddress Address of the investor.
+     * @return Timestamp of time left in which user can withdraw its investment including profit earned.
+     */
+    function getUserJSTInvestmentWithdrawTime(
+        address investorAddress
+    ) public view returns (uint256) {
+        if (investorIndexes[investorAddress] == 0) {
+            return 0;
+        } else {
+            if (
+                investors[investorIndexes[investorAddress]]
+                    .lastInvestedJSTTimestamp +
+                    15 days >
+                block.timestamp
+            ) {
+                return 0;
+            } else {
+                return
+                    investors[investorIndexes[investorAddress]]
+                        .lastInvestedJSTTimestamp +
+                    15 days -
+                    block.timestamp;
+            }
+        }
     }
 
     /**
