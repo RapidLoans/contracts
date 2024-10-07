@@ -1,0 +1,5 @@
+Contract deployment on Nile testnet
+PriceOracle at TSyjo8NvL1Lfh4eJ8cHyEi4hD896Fv1rUP
+LiquidityPool at TSyjo8NvL1Lfh4eJ8cHyEi4hD896Fv1rUP
+RapidLoansCore at TUMZLqKh7UnSGYdFhM7Uq1qC1dJdkV8mZn
+Subject at TW1rinpYdmxR9CMw3UMivU6DWo9379hXD2
