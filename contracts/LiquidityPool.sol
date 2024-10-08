@@ -256,6 +256,7 @@ contract LiquidityPool {
         investors[investorIndexes[msg.sender]].balanceJST -= amount;
         uint256 finalAmount = ((INVESTMENT_RETURNS_15_DAYS * amount) / 100) +
             (amount);
+        jst.approve(address(this), finalAmount);
         bool success = jst.transferFrom(address(this), msg.sender, finalAmount);
         require(success, "Transfer of JST failed");
         emit JSTWithdrawn(msg.sender, amount);
@@ -335,6 +336,7 @@ contract LiquidityPool {
         investors[investorIndexes[msg.sender]].borrowedJST += amount;
         investors[investorIndexes[msg.sender]].lastBorrowedJSTTimestamp = block
             .timestamp;
+        jst.approve(msg.sender, amount);
         bool success = jst.transferFrom(msg.sender, address(this), amount);
         require(success, "Transfer of JST failed");
         emit BorrowedJST(msg.sender, amount);
