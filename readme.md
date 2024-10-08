@@ -3,9 +3,13 @@
 All contracts are live on the Nile Testnet:
 
 - **PriceOracle**: THFynJj4PuKE6k83VEYMkLods4s9E9iRE5
+  https://nile.tronscan.org/#/contract/THFynJj4PuKE6k83VEYMkLods4s9E9iRE5/code
 - **LiquidityPool**: TNW2bEeTHh7xAMFaUxcpVAym7ZcyCDFn3P
+  https://nile.tronscan.org/#/contract/TNW2bEeTHh7xAMFaUxcpVAym7ZcyCDFn3P/code
 - **RapidLoansCore**: TQGFMUdmTKC5S5rXaY1UAtjF14M64phMER
+  https://nile.tronscan.org/#/contract/TQGFMUdmTKC5S5rXaY1UAtjF14M64phMER/code
 - **Subject**: TPsYJpTEnWvbQd67WwMFpqPdcW9BDnji5b
+  https://nile.tronscan.org/#/contract/TPsYJpTEnWvbQd67WwMFpqPdcW9BDnji5b/code
 
 ---
 
