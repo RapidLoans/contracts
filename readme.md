@@ -7,7 +7,7 @@
 
 **What RapidLoans Consists Of**
 
-_Liquidity Pool_
+###Liquidity Pool
 
 - Users can add liquidity to the pool in TRX or JST for a fixed 15-day period, earning a guaranteed 3% return.
 - Users cannot add more liquidity until they withdraw the entire amount after the 15-day period.
