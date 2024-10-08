@@ -99,10 +99,13 @@ contract RapidLoansCore {
         return address(this).balance;
     }
 
+    /**
+     * @notice A simple function that allows external addresses to send TRX to this contract.
+     */
     function depositTRX() public payable {}
 
     /**
-     * @notice A simple function that allows external addresses to send TRX to this contract.
+     * @notice A simple function that allows this contract to receive TRX.
      */
     receive() external payable {}
 }

@@ -1,6 +1,6 @@
 **Contract Deployment on Nile Testnet**
 
-- PriceOracle : THVZw2pkszLmoDFziD9hZ3ddNZRiiyDKcg
-- LiquidityPool : TJmcwgjZRju997ySsSGCi8SwPqJcoaEjrE
-- RapidLoansCore : TChb1a3pYMgnw9YjijF8TTHNzmGP42qqfm
-- Subject : TZ8nUrGmfvXce7TsYBXxX3iNJzVbQPYYKb
+- PriceOracle : TNpogvqtiT29HmNb4cuv9KFwUxar7crChc
+- LiquidityPool : TJxBPvejAAjVJp1D2UXUn72cy4iudaLDPU
+- RapidLoansCore : TBaP4hediD8wUrQJQFSF8hRzmE1EW9rkuJ
+- Subject : TJrmgGFspu1o9DcttVDb7vXXh9qwS416tQ

@@ -51,7 +51,7 @@ contract PriceOracle {
      * @return The price of corrosponding TRX asset in JST (18 decimals).
      */
     function getTRXToJST(uint256 amount) external view returns (uint256) {
-        uint256 price = assetPrices[TRX] * amount;
+        uint256 price = assetPrices[TRX] * (amount / 1e6);
         require(price > 0, "Price not available for the given asset");
         return price;
     }
@@ -62,7 +62,7 @@ contract PriceOracle {
      * @return The price of corrosponding JST asset in TRX (18 decimals).
      */
     function getJSTToTRX(uint256 amount) external view returns (uint256) {
-        uint256 price = assetPrices[JST] * amount;
+        uint256 price = assetPrices[JST] * (amount / 1e18);
         require(price > 0, "Price not available for the given asset");
         return price;
     }

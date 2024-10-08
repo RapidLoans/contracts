@@ -48,8 +48,9 @@ contract LiquidityPool {
     /**
      * @notice Borrow rate for liquidity pool loans determined by governance, NOT FLASH LOANS.
      */
-    uint256 public INVESTMENT_RETURNS_15_DAYS = 6;
-    uint256 public BORROW_RATE_1_MONTH = 7;
+    uint256 public INVESTMENT_RETURNS_15_DAYS = 3;
+    uint256 public BORROW_RATE_1_MONTH = 4;
+    address public OWNER;
     uint256 public profitFromFlashLoansTRX;
     uint256 public profitFromFlashLoansJST;
     /**
@@ -65,7 +66,16 @@ contract LiquidityPool {
      */
     mapping(address => uint256) internal investorIndexes;
 
+    /**
+     * @notice Modifier to check if caller is the owner.
+     */
+    modifier onlyOwner() {
+        require(msg.sender == OWNER, "Caller is not the owner");
+        _;
+    }
+
     constructor(address _priceOracle) {
+        OWNER = msg.sender;
         priceOracle = PriceOracle(_priceOracle);
         investorIdCounter = 1;
         investor memory initialInvestor = investor({
@@ -87,7 +97,9 @@ contract LiquidityPool {
      * @notice Set the address of the RapidLoansCore contract.
      * @param rapidLoansCore Address.
      */
-    function setRapidLoansCoreAddress(address rapidLoansCore) external {
+    function setRapidLoansCoreAddress(
+        address rapidLoansCore
+    ) external onlyOwner {
         RAPID_LOANS_CORE = rapidLoansCore;
     }
 
@@ -336,13 +348,15 @@ contract LiquidityPool {
      */
     function repayJST(uint256 amount) external {
         require(amount > 0, "Invalid amount");
-        uint256 borrowedAmount = investors[investorIndexes[msg.sender]]
-            .borrowedJST;
-        uint256 finalAmount = ((BORROW_RATE_1_MONTH * borrowedAmount) / 100) +
-            (borrowedAmount);
+        uint256 finalAmount = getUserJSTAmountToRepay(msg.sender);
         require(amount >= finalAmount, "Repay the whole loan.");
+        require(
+            jst.allowance(msg.sender, address(this)) >= finalAmount,
+            "Not enough JST approved"
+        );
+        jst.transferFrom(msg.sender, address(this), finalAmount);
         investors[investorIndexes[msg.sender]].balanceTRX += priceOracle
-            .getJSTToTRX(borrowedAmount);
+            .getJSTToTRX(investors[investorIndexes[msg.sender]].borrowedJST);
         investors[investorIndexes[msg.sender]].borrowedJST = 0;
         emit RepaidJST(msg.sender, amount);
     }
@@ -463,7 +477,25 @@ contract LiquidityPool {
      */
     function getUserJSTAmountToRepay(
         address borrowerAddress
-    ) public view returns (uint256 finalAmount) {}
+    ) public view returns (uint256 finalAmount) {
+        uint256 borrowedAmount = investors[investorIndexes[borrowerAddress]]
+            .borrowedJST;
+        if (
+            investors[investorIndexes[borrowerAddress]]
+                .lastBorrowedJSTTimestamp +
+                30 days >
+            block.timestamp
+        ) {
+            finalAmount =
+                (((2 * BORROW_RATE_1_MONTH) * borrowedAmount) / 100) +
+                borrowedAmount;
+        } else {
+            finalAmount =
+                ((BORROW_RATE_1_MONTH * borrowedAmount) / 100) +
+                borrowedAmount;
+        }
+        return finalAmount;
+    }
 
     /**
      * @param investorAddress Address of the investor.
@@ -511,6 +543,26 @@ contract LiquidityPool {
         return
             investors[investorIndexes[investorAddress]]
                 .lastBorrowedJSTTimestamp;
+    }
+
+    /**
+     * @param _investorAddress Address of the investor.
+     * @return amountTRX The amount of TRX borrowed by the investor.
+     */
+    function getUserTRXBorrowedAmount(
+        address _investorAddress
+    ) public view returns (uint256 amountTRX) {
+        return investors[investorIndexes[_investorAddress]].borrowedTRX;
+    }
+
+    /**
+     * @param _investorAddress Address of the investor.
+     * @return amountJST The amount of JST borrowed by the investor.
+     */
+    function getUserJSTBorrowedAmount(
+        address _investorAddress
+    ) public view returns (uint256 amountJST) {
+        return investors[investorIndexes[_investorAddress]].borrowedJST;
     }
 
     /**
