@@ -566,60 +566,6 @@ contract LiquidityPool {
     }
 
     /**
-     * @param investorAddress Address of the investor.
-     * @return Timestamp of time left in which user can withdraw its investment including profit earned.
-     */
-    function getUserTRXInvestmentWithdrawTime(
-        address investorAddress
-    ) public view returns (uint256) {
-        if (investorIndexes[investorAddress] == 0) {
-            return 0;
-        } else {
-            if (
-                investors[investorIndexes[investorAddress]]
-                    .lastInvestedTRXTimestamp +
-                    15 days >
-                block.timestamp
-            ) {
-                return 0;
-            } else {
-                return
-                    investors[investorIndexes[investorAddress]]
-                        .lastInvestedTRXTimestamp +
-                    15 days -
-                    block.timestamp;
-            }
-        }
-    }
-
-    /**
-     * @param investorAddress Address of the investor.
-     * @return Timestamp of time left in which user can withdraw its investment including profit earned.
-     */
-    function getUserJSTInvestmentWithdrawTime(
-        address investorAddress
-    ) public view returns (uint256) {
-        if (investorIndexes[investorAddress] == 0) {
-            return 0;
-        } else {
-            if (
-                investors[investorIndexes[investorAddress]]
-                    .lastInvestedJSTTimestamp +
-                    15 days >
-                block.timestamp
-            ) {
-                return 0;
-            } else {
-                return
-                    investors[investorIndexes[investorAddress]]
-                        .lastInvestedJSTTimestamp +
-                    15 days -
-                    block.timestamp;
-            }
-        }
-    }
-
-    /**
      * @dev Receive function to receive TRX from any address.
      */
     receive() external payable {
