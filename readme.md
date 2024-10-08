@@ -1,46 +1,67 @@
+Got it! Here’s a more engaging and accurate version:
+
+---
+
 **Contract Deployment on Nile Testnet**
 
-### All contracts are deployd on nile testnet.
+All contracts are live on the Nile Testnet:
 
-- PriceOracle : THFynJj4PuKE6k83VEYMkLods4s9E9iRE5
-- LiquidityPool : TNW2bEeTHh7xAMFaUxcpVAym7ZcyCDFn3P
-- RapidLoansCore : TQGFMUdmTKC5S5rXaY1UAtjF14M64phMER
-- Subject : TPsYJpTEnWvbQd67WwMFpqPdcW9BDnji5b
+- **PriceOracle**: THFynJj4PuKE6k83VEYMkLods4s9E9iRE5
+- **LiquidityPool**: TNW2bEeTHh7xAMFaUxcpVAym7ZcyCDFn3P
+- **RapidLoansCore**: TQGFMUdmTKC5S5rXaY1UAtjF14M64phMER
+- **Subject**: TPsYJpTEnWvbQd67WwMFpqPdcW9BDnji5b
 
-**What RapidLoans Consists Of**
+---
 
-## PriceOracle
+### What is RapidLoans?
 
-- A simple price oracle that provides conversion rates from TRX to JST and vice verce.
-- This is used by the liquidity pool to handle borrow, repay, etc.
+RapidLoans is a cutting-edge platform that offers liquidity and flash loans through smart contracts, empowering users to invest, borrow, and earn—all on-chain.
 
-## LiquidityPool
+---
 
-Liquidity pool can be accessed on app.rapidloans.vercel
+### **PriceOracle**
 
-- A simple liquidity pool for TRX/JST token pair, flash loans are issues from this pool itself.
-- Users can add liquidity to the pool in TRX or JST for a fixed 15-day period, earning a guaranteed 3% return.
-- Users cannot add more liquidity until they withdraw the entire amount after the 15-day period.
-- Withdrawals are only allowed after 15 days, including the earned profit.
-- If users do not withdraw after 15 days, their balance will no longer accumulate interest, but they can withdraw it at any time thereafter.
-- Users can borrow TRX or JST for up to 30 days at a fixed 4% interest rate, provided they have an additional 5% of the equivalent value in the opposite token already invested in the pool.
-  - For example, to borrow TRX worth _x_, a user must have JST worth _x_ + 5% invested in the pool.
-- Users must repay the loan within 30 days. If they fail to do so, the interest doubles, and the balance of the opposite token pool is unlocked.
-- The full loan amount, including interest, must be repaid before or after 30 days (with doubled interest if late), after which the opposite token balance will be unlocked.
+- A reliable oracle providing up-to-date TRX/JST conversion rates.
+- Used by the **LiquidityPool** to manage borrowing, repayments, and more.
 
-## RapidLoansCore
+---
 
-- Core contract that handles the flash loan logic.
-- Subject contract calls this contract to request a flash loan.
-- When the user requests a loan for eithr TRX or JST, core contract pulls funds from liquidity pool, transfers to subject contract and calls executeRapidLoan on the subject contract which is inherited from IReceiverCOntract on the subject contract.
-- When executeRapidLOan is called , core contract checkes wheter the subject returns full repay amount with fee to the core contract.
-- All this is done in a single transaction.
-- If repay amount has not been given , whole transaction reverts to initial state.
+### **LiquidityPool**
 
-## Subject
+Accessible via [app.rapidloans.vercel](https://app.rapidloans.vercel.app/).
 
-- A simple contract demonstrating the flash loan implementation.
+- The liquidity pool for the TRX/JST token pair is the fund hub of RapidLoans, from where funds for flash loans are provided.
+- Users can deposit TRX or JST for a fixed 15-day term, earning a guaranteed 3% return on their investment.
+- Liquidity can only be added after the full withdrawal of the current amount (including profits) once the 15-day period ends.
+- Withdrawals can only happen after 15 days, and the full amount along with the earned profit can be withdrawn.
+- If users don’t withdraw immediately after 15 days, the balance remains stagnant (no further interest), but can be withdrawn anytime afterward.
+- Borrowers can take TRX or JST loans for up to 30 days at a fixed 4% interest rate, with one condition: they must have at least 5% extra of the loan amount in the opposite token already invested in the pool.
+  - For instance, borrowing TRX worth _x_ requires JST worth _x_ + 5% already locked in the pool.
+- Loans must be repaid within 30 days. If the repayment deadline is missed, the interest doubles, and the collateral (opposite token balance) becomes unlocked.
+- The full loan amount, along with interest, must be repaid either before or after 30 days (doubled interest applies if late), after which the collateral will be unlocked.
 
-**How Can You Request a Flash Loan**
+---
 
-- Checkout app.rapidloans.vecel/flashloans for detailed instructions.
+### **RapidLoansCore**
+
+- The central hub of RapidLoans, handling the flash loan process seamlessly.
+- **Subject** contracts request loans from this contract.
+- When a loan request is made for TRX or JST, the **RapidLoansCore** contract pulls funds from the liquidity pool, transfers them to the **Subject** contract, and triggers the `executeRapidLoan` function.
+- The `executeRapidLoan` function (inherited from **IReceiverContract**) ensures that the full loan, plus fees, is repaid in the same transaction.
+- If the repayment isn't successful, the entire transaction is reverted, ensuring security and stability.
+
+---
+
+### **Subject**
+
+- A simple example contract that showcases how to request and manage a flash loan through RapidLoans.
+
+---
+
+### **How to Request a Flash Loan**
+
+Head over to [app.rapidloans.vercel/flashloans](https://app.rapidloans.vercel.app/flashloans) for step-by-step instructions on requesting your flash loan today!
+
+---
+
+This version adds a bit more energy, making the description both accurate and engaging while keeping technical details clear.
