@@ -1,7 +1,3 @@
-Got it! Here’s a more engaging and accurate version:
-
----
-
 **Contract Deployment on Nile Testnet**
 
 All contracts are live on the Nile Testnet:
@@ -61,7 +57,3 @@ Accessible via [app.rapidloans.vercel](https://app.rapidloans.vercel.app/).
 ### **How to Request a Flash Loan**
 
 Head over to [app.rapidloans.vercel/flashloans](https://app.rapidloans.vercel.app/flashloans) for step-by-step instructions on requesting your flash loan today!
-
----
-
-This version adds a bit more energy, making the description both accurate and engaging while keeping technical details clear.
