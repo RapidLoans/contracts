@@ -27,7 +27,7 @@ contract Subject is IReceiverContract {
      */
     function requestFlashLoanTRX(
         uint256 _amount
-    ) public payable returns (uint256 amountReceived) {
+    ) public returns (uint256 amountReceived) {
         amountReceived = flashLoanCore.requestFlashLoanTRX(
             _amount,
             payable(address(this))
@@ -45,7 +45,7 @@ contract Subject is IReceiverContract {
      */
     function requestFlashLoanJST(
         uint256 _amount
-    ) public payable returns (uint256 amountReceived) {
+    ) public returns (uint256 amountReceived) {
         amountReceived = flashLoanCore.requestFlashLoanJST(
             _amount,
             payable(address(this))
@@ -89,6 +89,12 @@ contract Subject is IReceiverContract {
     function getContractBalance() public view returns (uint256 balance) {
         return address(this).balance;
     }
+
+    function getFlashLoanCoreAddress() public view returns (address) {
+        return address(flashLoanCore);
+    }
+
+    function test() public payable {}
 
     /**
      * @notice A simple function that allows external addresses to send TRX to this contract.

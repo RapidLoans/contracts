@@ -40,15 +40,16 @@ contract RapidLoansCore {
         address payable subject
     ) public returns (uint256 amountWithdrawn) {
         uint256 amountTRXWithdrawn = liquidityPool.WithdrawFlashLoanTRX(
-            subject,
             _amount
         );
-        require(amountTRXWithdrawn > 0, "Transfer to subject failed");
-        uint256 initialAmount = address(this).balance;
+        require(amountTRXWithdrawn > 0, "Transfer to core failed");
         uint256 premium = (_amount * FLASH_LOAN_FEE_PERCENT) / 100;
+        (bool success2, ) = (address(subject)).call{value: _amount}("");
+        require(success2, "Transfer from lp to core failed.");
+        uint256 initialAmount = address(this).balance;
         IReceiverContract(subject).executeTRXRapidLoan(_amount + premium);
         uint256 finalAmount = address(this).balance;
-        require(finalAmount > initialAmount, "loan not returned you cheap");
+        require(finalAmount > initialAmount, "loan not returned");
         (bool success, ) = payable(address(liquidityPool)).call{
             value: address(this).balance
         }("");
@@ -67,22 +68,22 @@ contract RapidLoansCore {
      */
     function requestFlashLoanJST(
         uint256 _amount,
-        address payable subject
+        address subject
     ) public returns (uint256 amountJSTWithdrawn) {
-        amountJSTWithdrawn = liquidityPool.WithdrawFlashLoanJST(
-            address(this),
-            _amount
-        );
-        require(amountJSTWithdrawn > 0, "Transfer to subject failed");
+        amountJSTWithdrawn = liquidityPool.WithdrawFlashLoanJST(_amount);
+        require(amountJSTWithdrawn > 0, "Transfer to core failed");
+        uint256 premium = (_amount * FLASH_LOAN_FEE_PERCENT) / 100;
+        jst.approve(subject, _amount);
+        bool success2 = jst.transferFrom(address(this), subject, _amount);
+        require(success2, "transfer from lp to core failed");
         uint256 initialAmount = jst.balanceOf(address(this));
-        IReceiverContract(subject).executeJSTRapidLoan(
-            jst.balanceOf(address(this))
-        );
+        IReceiverContract(subject).executeJSTRapidLoan(_amount + premium);
         uint256 finalAmount = jst.balanceOf(address(this));
         require(
             finalAmount > initialAmount,
-            "RapidLoansCore loan not returned you cheap"
+            "RapidLoansCore loan not returned ."
         );
+        jst.approve(address(liquidityPool), _amount);
         bool success = jst.transfer(
             address(liquidityPool),
             _amount + FLASH_LOAN_FEE_PERCENT
@@ -97,6 +98,8 @@ contract RapidLoansCore {
     function getContractBalance() public view returns (uint256 balance) {
         return address(this).balance;
     }
+
+    function depositTRX() public payable {}
 
     /**
      * @notice A simple function that allows external addresses to send TRX to this contract.
